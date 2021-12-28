@@ -6,11 +6,14 @@ import cv2
 
 from image_processing.ImagePreprocessor import ImagePreprocessor
 from detectors.CircleDetector import CircleDetector
+from detectors.PolishCoinClassifier import PolishCoinClassifier
 import cv2 as cv
 import numpy as np
 
+
 # Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+
+def circle_detection_test():
     detector = CircleDetector()
     preprocessor = ImagePreprocessor()
 
@@ -30,4 +33,19 @@ if __name__ == '__main__':
     cv.waitKey(0)
     cv.destroyAllWindows()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+def classifier_test():
+    dirs = {
+        'training': 'dataset/single-coins/train',
+        'validation': 'data/fruits-360/Test',
+        'test': 'dataset/single-coins/test',
+        'output': 'dataset/output/vgg19',
+        'train_network_output': 'dataset/output',
+        'test_network_output': 'dataset/output',
+    }
+    classes = ['5zl', '2zl', 'non-polish-coin']
+    classifier = PolishCoinClassifier(classes=classes, dirs=dirs)
+
+
+if __name__ == '__main__':
+# circle_detection_test()

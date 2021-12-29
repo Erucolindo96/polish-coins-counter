@@ -46,6 +46,11 @@ def classifier_test():
     classes = ['5zl', '2zl', 'non-polish-coin']
     classifier = PolishCoinClassifier(classes=classes, dirs=dirs)
     classifier.train()
+    img = cv.imread('dataset/single-coins/test/5zl/033__5 Zlotych_poland.jpg',
+                    cv2.IMREAD_COLOR)
+    label, vect = classifier.classify(img)
+    print(label)
+    print(vect)
 
 if __name__ == '__main__':
     classifier_test()

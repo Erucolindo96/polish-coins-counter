@@ -1,6 +1,8 @@
 .idea
+dataset_old
 dataset
 kaggle*
 **/*.pyc
 **/__pycache__
-
+logs
+**/*.hdf5

@@ -1,4 +1,3 @@
-import PIL.Image
 import cv2 as cv
 import numpy as np
 
@@ -17,4 +16,3 @@ class ImagePreprocessor:
             processed = cv.resize(processed, self.dim)
 
         return processed
-

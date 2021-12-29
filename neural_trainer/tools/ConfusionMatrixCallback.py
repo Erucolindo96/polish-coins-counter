@@ -31,7 +31,7 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
     logdir : string
         directory that created matrices will be held at
     validation_set : tf.data.Dataset
-        validation dataset
+        validation dataset_old
     class_names : list of strings
         list of classes' names; index of the name defines the class numerical identifier
     freq : Int, optional (default: 1)
@@ -116,7 +116,7 @@ class ConfusionMatrixCallback(tf.keras.callbacks.Callback):
         if epoch % self.freq != 0:
             return
 
-        # Use the model to predict the values from the validation dataset.
+        # Use the model to predict the values from the validation dataset_old.
         predictions_softmax = self.model.predict(self.validation_set)
         predictions = tf.argmax(predictions_softmax, axis=1)
 

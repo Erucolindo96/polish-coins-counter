@@ -1,13 +1,3 @@
-# ================================================================================================================
-# @ Author: Krzysztof Pierczyk
-# @ Create Time: 2020-12-09 18:16:36
-# @ Modified time: 2020-12-20 16:55:11
-# @ Description:
-#
-#     Implementation of the complete image-recognision neural network's training flow.
-#
-# ================================================================================================================
-
 import tensorflow as tf
 from neural_trainer.tools.ImageAugmentation import ImageAugmentation
 from neural_trainer.tools.ConfusionMatrixCallback import ConfusionMatrixCallback
@@ -30,10 +20,10 @@ class NeuralTrainer:
         self.image_datatype = image_datatype
 
         self.__history = None
-        self.labels_to_labels_vect = {} # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
+        self.labels_to_labels_vect = {}  # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
         # bo dubluje sie z clasami w PolishCoinClassifier
 
-        self.batch_size = 64
+        self.batch_size = 32
         self.histogram_freq = 1
         self.write_graph = True
         self.write_images = False
@@ -93,6 +83,7 @@ class NeuralTrainer:
 
             datas['files'].extend(files)
             datas['labels'].extend([label_as_vect for _ in files])
+            label_index += 1
 
         ds = tf.data.Dataset.from_tensor_slices((datas['files'], datas['labels']))
         ds = ds.map(

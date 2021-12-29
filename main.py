@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import cv2
 from PIL import Image
 
@@ -10,7 +6,6 @@ from detectors.CircleDetector import CircleDetector
 from detectors.PolishCoinClassifier import PolishCoinClassifier
 from image_processing.CircleDrawer import CircleDrawer
 import cv2 as cv
-import numpy as np
 
 
 def circle_detection_test():
@@ -40,34 +35,29 @@ def circle_detection_test():
     cv.destroyAllWindows()
 
 
-def classifier_test():
+def classifier_train():
     dirs = {
         'training': 'dataset/single-coins/train',
         'validation': 'dataset/single-coins/validation',
         'test': 'dataset/single-coins/test',
-        'output': 'dataset/output/vgg19',
-        'train_network_output': 'dataset/output',
-        'test_network_output': 'dataset/output',
+        'logs': 'logs',
+        'output': 'output/vgg19',
     }
-    # classes = ['5zl', '2zl', 'non-polish-coin']
-    classifier = PolishCoinClassifier(num_classes=3, dirs=dirs,
-                                      model_weights_path='dataset/logs/weights-epoch_01-val_loss_0.00.hdf5',
-                                      )
-    # classifier.train()
-    img = cv.imread('dataset/single-coins/test/5zl/033__5 Zlotych_poland.jpg',
-                    cv2.IMREAD_COLOR)
-    label, vect = classifier.classify(img)
-    print(label)
-    print(vect)
+    classifier = PolishCoinClassifier(num_classes=9, dirs=dirs, epochs_training=40, input_shape=(150, 150, 3))
+    classifier.train()
 
 
 def sample_full_detection():
     img_dim = (600, 400)
+    classifier_image_shape = (150, 150, 3)
+    classifier_weights_file = 'output/vgg19/final-model-weights_3.013_150x150.hdf5'
+    detected_image = 'dataset/multiple-coins/267875767_642836280194687_5530124461828806183_n.jpg'
+
     detector = CircleDetector()
-    preprocessor = ImagePreprocessor(dim=img_dim)
+    preprocessor = ImagePreprocessor(dim=img_dim)  # only for opencv images
     circle_drawer = CircleDrawer()
 
-    detected_img = cv.imread('dataset/multiple-coins/drive-download-20211227T133506Z-001/20211227_141629.jpg',
+    detected_img = cv.imread(detected_image,
                              cv.IMREAD_COLOR)
     # detect circles
     detected_img = preprocessor.preprocess_opencv(detected_img)
@@ -78,29 +68,27 @@ def sample_full_detection():
     dirs = {
         'training': 'dataset/single-coins/train',
         'validation': 'dataset/single-coins/validation',
-        'test': 'dataset/single-coins/test'
+        'test': 'dataset/single-coins/test',
+        'logs': 'logs'
     }
-    classifier_weights_file = 'dataset/logs/weights-epoch_01-val_loss_0.00.hdf5'
-    classifier = PolishCoinClassifier(num_classes=3, dirs=dirs,
-                                      model_weights_path='dataset/logs/weights-epoch_01-val_loss_0.00.hdf5')
+    classifier = PolishCoinClassifier(num_classes=9, dirs=dirs, epochs_training=40, input_shape=classifier_image_shape,
+                                      model_weights_path=classifier_weights_file)
 
-    #get subimages with circles
-    detected_img_color = Image.open('dataset/multiple-coins/drive-download-20211227T133506Z-001/20211227_141629.jpg')
+    # get subimages with circles
+    detected_img_color = Image.open(detected_image)
     detected_img_color = detected_img_color.resize(preprocessor.dim)
     subimages = circle_drawer.get_subimages(detected_img_color, bboxes)
 
-    #classify
+    # classify
     for bbox, subimage in subimages.items():
         label, result_vect = classifier.classify(subimage)
         detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
 
-    #show detection results
+    # show detection results
     detected_img_color.show()
 
 
-
-
 if __name__ == '__main__':
-    # classifier_test()
+    # classifier_train()
     # circle_detection_test()
     sample_full_detection()

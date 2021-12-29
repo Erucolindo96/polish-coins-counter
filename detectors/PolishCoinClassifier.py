@@ -26,7 +26,6 @@ class PolishCoinClassifier:
         self.tf_verbosity = False
         self.kernel_initializer = 'glorot_normal'
         self.bias_initializer = 'glorot_normal'
-        self.log_dir = 'dataset/logs'
         self.learning_rate = 1e-4
         self.metrics = ['accuracy', 'mse']
 
@@ -39,8 +38,8 @@ class PolishCoinClassifier:
         self.__compile_model()
         self.__show_model()
 
-        self.trainer = NeuralTrainer(model=self.model, dirs=self.dirs, log_dir=self.log_dir,
-                                     epochs=self.epochs_training, test_model=True)
+        self.trainer = NeuralTrainer(model=self.model, dirs=self.dirs, log_dir=self.dirs['logs'],
+                                     epochs=self.epochs_training, test_model=True, input_shape=self.input_shape)
         self.trainer.initialize()
 
     def __init_tf(self):

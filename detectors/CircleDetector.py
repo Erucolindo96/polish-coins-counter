@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
 
 
 class CircleDetector:
@@ -10,4 +11,6 @@ class CircleDetector:
     def detect(self, image):
         circles = cv.HoughCircles(image, cv.HOUGH_GRADIENT, dp=1, minDist=self.min_dist, param1=200, param2=30,
                                   minRadius=self.min_radius, maxRadius=self.max_radius)
+
+        circles = np.uint16(np.around(circles))
         return circles

@@ -8,25 +8,17 @@
 #
 # ================================================================================================================
 
-# Tensorflow
 import tensorflow as tf
-# Dedicated datapipe
 from neural_trainer.tools.ImageAugmentation import ImageAugmentation
-from neural_trainer.tools.DataPipe import DataPipe
 from neural_trainer.tools.ConfusionMatrixCallback import ConfusionMatrixCallback
 from neural_trainer.tools.LRTensorBoard import LRTensorBoard
-# Images manipulation
-# from PIL import Image
-# Utilities
 from glob import glob
-import numpy as np
 import pickle
 import os
-import imghdr
 
 
 class NeuralTrainer:
-    def __init__(self, model, dirs, log_dir, epochs=40, test_model=True, input_shape=(80, 80, 3),
+    def __init__(self, model, dirs, log_dir, epochs=10, test_model=True, input_shape=(80, 80, 3),
                  image_datatype='float32'):
         self.model = model
         self.callbacks = []
@@ -37,8 +29,8 @@ class NeuralTrainer:
         self.input_shape = input_shape
         self.image_datatype = image_datatype
 
-        self.pipe = None
         self.__history = None
+        self.labels_to_labels_vect = {}
 
         self.batch_size = 64
         self.learning_rate = 1e-4
@@ -52,9 +44,6 @@ class NeuralTrainer:
         self.confusion_matrix_size = [180, 180]
         self.confusion_matrix_raw_ext = 'png'
         self.confusion_matrix_to_save = 'both'
-
-        # Create output folder
-        # os.makedirs(self.dirs['output'], exist_ok=True)
 
     def initialize(self):
         """
@@ -90,14 +79,7 @@ class NeuralTrainer:
 
     def read_image(self, filepath):
         image = tf.io.read_file(filepath)
-        # print(tf.strings.regex_full_match(filepath, '(.*).jpg'))
-        # TODO moze zle dzialac - trzeba bedzie
-        # if tf.strings.regex_full_match(filepath, '(.*).jpg'):
-        print('jpg image')
         image = tf.image.decode_jpeg(image, channels=3)
-        # else:
-        #     print('png image')
-        #     image = tf.image.decode_png(image, channels=3)
 
         image = tf.cast(image, tf.dtypes.as_dtype(self.image_datatype))
         image = tf.image.resize(image, [self.input_shape[0], self.input_shape[1]])
@@ -106,13 +88,17 @@ class NeuralTrainer:
     def __create_dataset(self, directory):
         labels_dirs = glob(os.path.join(directory, '*'))
         datas = {'files': [], 'labels': []}
+        labels_cnt = len(labels_dirs)
+        label_index = 0
 
         for label_dir in labels_dirs:
             label = os.path.basename(os.path.normpath(label_dir))
+            label_as_vect = tf.one_hot(label_index, depth=labels_cnt, dtype=self.image_datatype)
+            self.labels_to_labels_vect[label] = label_as_vect
             files = glob(os.path.join(label_dir, '*'))
 
             datas['files'].extend(files)
-            datas['labels'].extend([label for f in files])
+            datas['labels'].extend([label_as_vect for _ in files])
 
         ds = tf.data.Dataset.from_tensor_slices((datas['files'], datas['labels']))
         ds = ds.map(
@@ -162,9 +148,6 @@ class NeuralTrainer:
         print('\n\n')
 
     def __prepare_callbacks(self):
-        # Create output folder for weights saves
-        # modeldir = os.path.join(self.dirs['output'], 'weights')
-        # os.makedirs(modeldir, exist_ok=True)
 
         # Create the logdir
         os.makedirs(self.log_dir, exist_ok=True)
@@ -225,15 +208,6 @@ class NeuralTrainer:
         """
         Runs the training flow
         """
-        for elem in self.training_set:
-            print('step')
-            print(elem[1])
-        # print(np.shape(self.training_set.as_numpy_iterator()))
-        # Start training
-
-        #jest jakis problem z wielkością outputu, pewnie wynik powinien byc tablicą a nie pojedyncza wartoscia?
-        #siec musi dostac jako y wektor liczb z jedynką tam, gdzoie jest klasa, i zerami w pozostałych przypadkach
-        #na razie dostaje jedna labelke tekstowa
         self.__history = self.model.fit(
             x=self.training_set,
             validation_data=self.validation_set,
@@ -264,7 +238,7 @@ class NeuralTrainer:
         Tests the result model
         """
 
-        if self.pipe.test_set is not None and self.test_model is True:
+        if self.test_set is not None and self.test_model is True:
             # # If the best models hould be evaluated, load appropriate weights
             # if self.logging_params['test_model'] == 'best':
             #     # Find epoch's index of the best score
@@ -325,4 +299,3 @@ class NeuralTrainer:
             # Save test score
             with open(testname + '.pickle', 'wb') as test_file:
                 pickle.dump(test_dict, test_file)
-

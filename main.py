@@ -43,11 +43,11 @@ def classifier_test():
         'train_network_output': 'dataset/output',
         'test_network_output': 'dataset/output',
     }
-    classes = ['5zl', '2zl', 'non-polish-coin']
-    classifier = PolishCoinClassifier(classes=classes, dirs=dirs,
-                                      # model_weights_path='dataset/logs/weights-epoch_01-val_loss_0.00.hdf5',
+    # classes = ['5zl', '2zl', 'non-polish-coin']
+    classifier = PolishCoinClassifier(num_classes=3, dirs=dirs,
+                                      model_weights_path='dataset/logs/weights-epoch_01-val_loss_0.00.hdf5',
                                       )
-    classifier.train()
+    # classifier.train()
     img = cv.imread('dataset/single-coins/test/5zl/033__5 Zlotych_poland.jpg',
                     cv2.IMREAD_COLOR)
     label, vect = classifier.classify(img)

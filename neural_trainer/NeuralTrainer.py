@@ -30,7 +30,8 @@ class NeuralTrainer:
         self.image_datatype = image_datatype
 
         self.__history = None
-        self.labels_to_labels_vect = {}
+        self.labels_to_labels_vect = {} # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
+        # bo dubluje sie z clasami w PolishCoinClassifier
 
         self.batch_size = 64
         self.histogram_freq = 1
@@ -87,6 +88,7 @@ class NeuralTrainer:
             label = os.path.basename(os.path.normpath(label_dir))
             label_as_vect = tf.one_hot(label_index, depth=labels_cnt, dtype=self.image_datatype)
             self.labels_to_labels_vect[label] = label_as_vect
+
             files = glob(os.path.join(label_dir, '*'))
 
             datas['files'].extend(files)
@@ -189,7 +191,9 @@ class NeuralTrainer:
             shuffle=False
         )
 
+        os.makedirs(self.dirs['output'], exist_ok=True)
         self.model.save_weights(os.path.join(self.dirs['output'], 'final-model-weights.hdf5'))
+
         with open(os.path.join(self.log_dir, 'history.pickle'), 'wb') as history_file:
             pickle.dump(self.__history.history, history_file)
 
@@ -199,7 +203,6 @@ class NeuralTrainer:
         """
 
         if self.test_set is not None and self.test_model is True:
-
             # Create path to the output folder
             testdir = os.path.join(self.log_dir, 'test')
             os.makedirs(testdir, exist_ok=True)

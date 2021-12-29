@@ -8,12 +8,11 @@ from neural_trainer.NeuralTrainer import NeuralTrainer
 
 
 class PolishCoinClassifier:
-    def __init__(self, classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
+    def __init__(self, num_classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
                  image_datatype='float32',
                  epochs_training=10):
         self.model_weights_path = model_weights_path
-        self.num_classes = len(classes)
-        self.classes = classes
+        self.num_classes = num_classes
         self.input_shape = input_shape
         self.dirs = dirs
         self.image_datatype = image_datatype

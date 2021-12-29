@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -116,7 +118,7 @@ class PolishCoinClassifier:
     def train(self):
         self.trainer.run()
 
-    def classify(self, image):
+    def classify(self, image) -> Tuple[str, tf.Tensor]:
         img_array = keras.preprocessing.image.img_to_array(np.array(image))
         img_array = tf.image.resize(img_array, [self.input_shape[0], self.input_shape[1]])
         img_array = tf.expand_dims(img_array, 0)

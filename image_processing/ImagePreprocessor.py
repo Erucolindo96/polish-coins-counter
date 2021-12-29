@@ -1,3 +1,4 @@
+import PIL.Image
 import cv2 as cv
 import numpy as np
 
@@ -8,7 +9,7 @@ class ImagePreprocessor:
         self.resize = resize
         self.dim = dim
 
-    def preprocess(self, image: np.array):
+    def preprocess_opencv(self, image: np.array):
         processed = image
         if self.grayscale:
             processed = cv.cvtColor(processed, cv.COLOR_BGR2GRAY)
@@ -16,3 +17,4 @@ class ImagePreprocessor:
             processed = cv.resize(processed, self.dim)
 
         return processed
+

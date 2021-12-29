@@ -1,3 +1,5 @@
 .idea
 dataset
 kaggle*
+*.pyc
+__pycache__

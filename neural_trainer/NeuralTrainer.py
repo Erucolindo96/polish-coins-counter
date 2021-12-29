@@ -22,6 +22,7 @@ from glob import glob
 import numpy as np
 import pickle
 import os
+import imghdr
 
 
 class NeuralTrainer:
@@ -87,24 +88,35 @@ class NeuralTrainer:
 
         pass
 
+    def read_image(self, filepath):
+        image = tf.io.read_file(filepath)
+        # print(tf.strings.regex_full_match(filepath, '(.*).jpg'))
+        # TODO moze zle dzialac - trzeba bedzie
+        # if tf.strings.regex_full_match(filepath, '(.*).jpg'):
+        print('jpg image')
+        image = tf.image.decode_jpeg(image, channels=3)
+        # else:
+        #     print('png image')
+        #     image = tf.image.decode_png(image, channels=3)
+
+        image = tf.cast(image, tf.dtypes.as_dtype(self.image_datatype))
+        image = tf.image.resize(image, [self.input_shape[0], self.input_shape[1]])
+        return image
+
     def __create_dataset(self, directory):
-        def read_image(filepath):
-            image = tf.io.read_file(filepath)
-            image = tf.io.decode_png(image)
-            image = tf.cast(image, tf.dtypes.as_dtype(self.image_datatype))
-            image = tf.image.resize(image, [self.input_shape[0], self.input_shape[1]])
-            return image
-
         labels_dirs = glob(os.path.join(directory, '*'))
-        datas = []
+        datas = {'files': [], 'labels': []}
 
-        for label in labels_dirs:
-            files = glob(os.path.join(label, '/*.png'))
-            datas.extend([(f, label) for f in files])
+        for label_dir in labels_dirs:
+            label = os.path.basename(os.path.normpath(label_dir))
+            files = glob(os.path.join(label_dir, '*'))
 
-        ds = tf.data.Dataset.from_tensor_slices(datas)
+            datas['files'].extend(files)
+            datas['labels'].extend([label for f in files])
+
+        ds = tf.data.Dataset.from_tensor_slices((datas['files'], datas['labels']))
         ds = ds.map(
-            lambda file, file_label: (read_image(file), file_label),
+            lambda file, file_label: (self.read_image(file), file_label),
             num_parallel_calls=tf.data.AUTOTUNE
         )
         return ds
@@ -118,12 +130,12 @@ class NeuralTrainer:
 
         self.training_set = ImageAugmentation(
             dtype='float32'
-        )(self.pipe.training_set)
+        )(self.training_set)
 
         # Apply batching to the data sets
-        self.training_set.batch(self.batch_size)
-        self.validation_set.batch(self.batch_size)
-        self.test_set.batch(self.batch_size)
+        self.training_set = self.training_set.batch(self.batch_size)
+        self.validation_set = self.validation_set.batch(self.batch_size)
+        self.test_set = self.test_set.batch(self.batch_size)
         # TODO zastabnowić się nad dodaniem prefetch batch
 
     def __compile_model(self):
@@ -177,7 +189,7 @@ class NeuralTrainer:
         os.makedirs(os.path.join(self.log_dir, 'validation/cm'), exist_ok=True)
         cm_callback = ConfusionMatrixCallback(
             logdir=os.path.join(self.log_dir, 'validation/cm'),
-            validation_set=self.pipe.validation_set,
+            validation_set=self.validation_set,
             class_names=class_names,
             freq=self.confusion_matrix_freq,
             fig_size=self.confusion_matrix_size,
@@ -213,11 +225,18 @@ class NeuralTrainer:
         """
         Runs the training flow
         """
-
+        for elem in self.training_set:
+            print('step')
+            print(elem[1])
+        # print(np.shape(self.training_set.as_numpy_iterator()))
         # Start training
+
+        #jest jakis problem z wielkością outputu, pewnie wynik powinien byc tablicą a nie pojedyncza wartoscia?
+        #siec musi dostac jako y wektor liczb z jedynką tam, gdzoie jest klasa, i zerami w pozostałych przypadkach
+        #na razie dostaje jedna labelke tekstowa
         self.__history = self.model.fit(
-            x=self.pipe.training_set,
-            validation_data=self.pipe.validation_set,
+            x=self.training_set,
+            validation_data=self.validation_set,
             epochs=self.epochs,
             initial_epoch=0,
             callbacks=self.callbacks,
@@ -279,7 +298,7 @@ class NeuralTrainer:
             # Prepare a new Confusion Matrix callback for the test set
             cm_callback = ConfusionMatrixCallback(
                 logdir=os.path.join(testdir, 'cm'),
-                validation_set=self.pipe.test_set,
+                validation_set=self.test_set,
                 class_names=class_names,
                 freq=self.confusion_matrix_freq,
                 fig_size=self.confusion_matrix_size,
@@ -295,7 +314,7 @@ class NeuralTrainer:
 
             # Evaluate test score
             test_dict = self.model.evaluate(
-                x=self.pipe.test_set,
+                x=self.test_set,
                 verbose=1,
                 workers=4,
                 use_multiprocessing=True,
@@ -306,3 +325,4 @@ class NeuralTrainer:
             # Save test score
             with open(testname + '.pickle', 'wb') as test_file:
                 pickle.dump(test_dict, test_file)
+

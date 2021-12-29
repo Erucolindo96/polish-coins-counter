@@ -7,15 +7,17 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.models import Model
 from neural_trainer.NeuralTrainer import NeuralTrainer
+from tensorflow.keras.applications import vgg19
 
 
 class PolishCoinClassifier:
-    def __init__(self, classes, dirs, model=None, num_classes=3, input_shape=(80, 80, 3)):
+    def __init__(self, classes, dirs, model=None, input_shape=(80, 80, 3), image_datatype='float32'):
         self.model = model
-        self.num_classes = num_classes
+        self.num_classes = len(classes)
         self.classes = classes
         self.input_shape = input_shape
         self.dirs = dirs
+        self.image_datatype = image_datatype
 
         self.gpu_memory_limit_mb = 3072
         self.tf_verbosity = False
@@ -48,26 +50,57 @@ class PolishCoinClassifier:
         kernel_initializer = tf.keras.initializers.get(self.kernel_initializer)
         bias_initializer = tf.keras.initializers.get(self.bias_initializer)
 
+        model_input = tf.keras.layers.Input(self.input_shape, dtype=self.image_datatype)
+        preprocessing = tf.keras.applications.vgg19.preprocess_input(model_input)
+
         vgg19 = tf.keras.applications.vgg19.VGG19(weights='imagenet', include_top=False,
                                                   input_shape=self.input_shape)
-        vgg19 = Flatten()(vgg19)
-        vgg19 = Dense(
+        vgg19.trainable = False
+
+        model = vgg19(preprocessing)
+        model = Flatten()(model)
+        model = Dense(
             4096,
             activation='relu',
             kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)(vgg19)
-        vgg19 = Dense(
+            bias_initializer=bias_initializer)(model)
+        model = Dense(
             4096,
             activation='relu',
             kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)(vgg19)
-        vgg19 = Dense(
+            bias_initializer=bias_initializer)(model)
+        model = Dense(
             self.num_classes,
             activation='softmax',
             kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)(vgg19)
+            bias_initializer=bias_initializer)(model)
 
-        self.model = vgg19
+        self.model = Model(inputs=[model_input], outputs=[model])
+
+        # vgg = vgg19.VGG19(
+        #     weights='imagenet',
+        #     include_top=False
+        # )
+        #
+        # # Turn-off original VGG19 layers training
+        # for layer in vgg.layers:
+        #     layer.trainable = False
+        #
+        # # Create preprocessing layer
+        # model_input = tf.keras.layers.Input(self.input_shape, dtype='float32')
+        # preprocessing = vgg19.preprocess_input(model_input)
+        #
+        # # Concatenate model and the preprocessing layer
+        # model = vgg(preprocessing)
+        #
+        # # Add Dense layers
+        # model = Flatten()(model)
+        # model = Dense(4096, activation='relu')(model)
+        # model = Dense(4096, activation='relu')(model)
+        # model = Dense(self.num_classes, activation='softmax')(model)
+        #
+        # # Compile model
+        # self.model = Model(inputs=[model_input], outputs=[model])
 
     def train(self):
         self.trainer.run()

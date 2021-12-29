@@ -37,7 +37,7 @@ def circle_detection_test():
 def classifier_test():
     dirs = {
         'training': 'dataset/single-coins/train',
-        'validation': 'data/fruits-360/Test',
+        'validation': 'dataset/single-coins/validation',
         'test': 'dataset/single-coins/test',
         'output': 'dataset/output/vgg19',
         'train_network_output': 'dataset/output',
@@ -45,7 +45,8 @@ def classifier_test():
     }
     classes = ['5zl', '2zl', 'non-polish-coin']
     classifier = PolishCoinClassifier(classes=classes, dirs=dirs)
-
+    classifier.train()
 
 if __name__ == '__main__':
+    classifier_test()
 # circle_detection_test()

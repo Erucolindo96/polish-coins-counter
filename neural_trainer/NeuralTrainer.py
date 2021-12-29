@@ -33,8 +33,6 @@ class NeuralTrainer:
         self.labels_to_labels_vect = {}
 
         self.batch_size = 64
-        self.learning_rate = 1e-4
-        self.metrics = ['accuracy', 'mse']
         self.histogram_freq = 1
         self.write_graph = True
         self.write_images = False
@@ -52,12 +50,6 @@ class NeuralTrainer:
 
         # Prepare the pipeline
         self.__prepare_pipeline()
-
-        # Compile model
-        self.__compile_model()
-
-        # Print models' statistics
-        self.__show_model()
 
         # Prepare training callbacks
         self.__prepare_callbacks()
@@ -123,29 +115,6 @@ class NeuralTrainer:
         self.validation_set = self.validation_set.batch(self.batch_size)
         self.test_set = self.test_set.batch(self.batch_size)
         # TODO zastabnowić się nad dodaniem prefetch batch
-
-    def __compile_model(self):
-        """
-        Compiles the model setting required optimizer and loss function
-        """
-
-        # Initialize optimizer
-        optimizer = tf.keras.optimizers.get({
-            "class_name": 'adam',
-            "config": {"learning_rate": self.learning_rate}}
-        )
-
-        # Compile the model
-        self.model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=self.metrics)
-
-    def __show_model(self):
-        """
-        Prints model statistics
-        """
-
-        print('\n\n')
-        self.model.summary()
-        print('\n\n')
 
     def __prepare_callbacks(self):
 
@@ -220,16 +189,7 @@ class NeuralTrainer:
             shuffle=False
         )
 
-        # Create path to the output folder
-        # historydir = os.path.join(self.log_dir, 'history')
-        # os.makedirs(historydir, exist_ok=True)
-        #
-        #     # Compute index of the subrun
-        # subrun = len(glob(os.path.join(historydir, '*.pickle'))) + 1
-        #
-        #     # Create path to the output file
-        #     historyname = os.path.join(historydir, 'subrun_{:d}'.format(subrun))
-
+        self.model.save_weights(os.path.join(self.dirs['output'], 'final-model-weights.hdf5'))
         with open(os.path.join(self.log_dir, 'history.pickle'), 'wb') as history_file:
             pickle.dump(self.__history.history, history_file)
 
@@ -239,17 +199,6 @@ class NeuralTrainer:
         """
 
         if self.test_set is not None and self.test_model is True:
-            # # If the best models hould be evaluated, load appropriate weights
-            # if self.logging_params['test_model'] == 'best':
-            #     # Find epoch's index of the best score
-            #     best_score = np.nanmin(np.array(self.__history.history['val_loss']))
-            #
-            #     # Find the weights file
-            #     modeldir = os.path.join(self.dirs['output'], 'weights')
-            #     weights_file = glob(os.path.join(modeldir, '*val_loss_{:.2f}*'.format(best_score)))[0]
-            #
-            #     # Load weights
-            #     self.model.load_weights(weights_file)
 
             # Create path to the output folder
             testdir = os.path.join(self.log_dir, 'test')

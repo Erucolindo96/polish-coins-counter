@@ -8,11 +8,10 @@ from neural_trainer.NeuralTrainer import NeuralTrainer
 
 
 class PolishCoinClassifier:
-    def __init__(self, classes, dirs, model_path=None, train_model=True, input_shape=(80, 80, 3),
+    def __init__(self, classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
                  image_datatype='float32',
                  epochs_training=10):
-        self.model_path = model_path
-        self.train_model = train_model
+        self.model_weights_path = model_weights_path
         self.num_classes = len(classes)
         self.classes = classes
         self.input_shape = input_shape
@@ -27,11 +26,17 @@ class PolishCoinClassifier:
         self.kernel_initializer = 'glorot_normal'
         self.bias_initializer = 'glorot_normal'
         self.log_dir = 'dataset/logs'
+        self.learning_rate = 1e-4
+        self.metrics = ['accuracy', 'mse']
+
         self.__init_tf()
 
         self.__create_model()
-        if self.model_path:
+        if self.model_weights_path:
             self.__load_model()
+
+        self.__compile_model()
+        self.__show_model()
 
         self.trainer = NeuralTrainer(model=self.model, dirs=self.dirs, log_dir=self.log_dir,
                                      epochs=self.epochs_training, test_model=True)
@@ -51,8 +56,24 @@ class PolishCoinClassifier:
 
         tf.debugging.set_log_device_placement(self.tf_verbosity)
 
+    def __compile_model(self):
+        optimizer = tf.keras.optimizers.get({
+            "class_name": 'adam',
+            "config": {"learning_rate": self.learning_rate}}
+        )
+        self.model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=self.metrics)
+
+    def __show_model(self):
+        """
+        Prints model statistics
+        """
+
+        print('\n\n')
+        self.model.summary()
+        print('\n\n')
+
     def __load_model(self):
-        pass
+        self.model.load_weights(self.model_weights_path)
 
     def __create_model(self):
         kernel_initializer = tf.keras.initializers.get(self.kernel_initializer)
@@ -94,8 +115,7 @@ class PolishCoinClassifier:
         return None
 
     def train(self):
-        if self.train_model:
-            self.trainer.run()
+        self.trainer.run()
 
     def classify(self, image):
         img_array = keras.preprocessing.image.img_to_array(np.array(image))

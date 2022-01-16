@@ -7,10 +7,9 @@ from PIL import ImageFont, ImageDraw
 
 
 class CircleDrawer:
-    def __init__(self, color=(0, 255, 0), non_polish_label=None):
+    def __init__(self, color=(0, 255, 0)):
         self.color = color
         self.subimage_margin = 2
-        self.non_polish_label = non_polish_label
 
     def draw(self, image: np.array, circles):
         for i in circles[0, :]:
@@ -18,14 +17,10 @@ class CircleDrawer:
             cv.circle(image, (i[0], i[1]), 2, self.color, 3)
         return image
 
-    def draw_classification_result(self, image: PIL.Image, bbox, result_label, draw_non_polish=True):
+    def draw_classification_result(self, image: PIL.Image, bbox, result_label):
         # cv.rectangle(image, bbox[0:1], bbox[2:3], self.color)
         # cv.putText(image, result_label, bbox[0:1], cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=self.color)
         draw = ImageDraw.Draw(image)
-        label_non_polish = result_label == self.non_polish_label
-        if not draw_non_polish and label_non_polish:
-            return image
-        
         draw.rectangle(bbox, outline=self.color)
         draw.text((bbox[0], bbox[1]), result_label,
                   font=ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMono.ttf', 20), fill=self.color)

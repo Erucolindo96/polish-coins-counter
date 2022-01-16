@@ -60,12 +60,13 @@ def sample_full_detection():
         'test': 'dataset/single-coins/test',
         'logs': 'logs'
     }
-    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40, input_shape=classifier_image_shape,
+    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40,
+                                      input_shape=classifier_image_shape,
                                       model_weights_path=classifier_weights_file)
 
     detector = CircleDetector()
     preprocessor = ImagePreprocessor(dim=img_dim)  # only for opencv images
-    circle_drawer = CircleDrawer(non_polish_label=classifier.non_polish_class_label)
+    circle_drawer = CircleDrawer()
 
     detected_img = cv.imread(detected_image,
                              cv.IMREAD_COLOR)
@@ -82,7 +83,8 @@ def sample_full_detection():
     # classify
     for bbox, subimage in subimages.items():
         label, result_vect = classifier.classify(subimage)
-        detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label, draw_non_polish=False)
+        if label != classifier.non_polish_class_label:
+            detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
 
     # show detection results
     detected_img_color.show()

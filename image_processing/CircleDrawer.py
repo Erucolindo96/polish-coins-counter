@@ -5,6 +5,7 @@ import numpy as np
 import cv2 as cv
 from PIL import ImageFont, ImageDraw
 
+
 class CircleDrawer:
     def __init__(self, color=(0, 255, 0)):
         self.color = color
@@ -21,7 +22,8 @@ class CircleDrawer:
         # cv.putText(image, result_label, bbox[0:1], cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=self.color)
         draw = ImageDraw.Draw(image)
         draw.rectangle(bbox, outline=self.color)
-        draw.text((bbox[0], bbox[1]), result_label, font=ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMono.ttf', 20), fill=self.color)
+        draw.text((bbox[0], bbox[1]), result_label,
+                  font=ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMono.ttf', 20), fill=self.color)
         return image
 
     def get_circles_bboxex(self, circles):

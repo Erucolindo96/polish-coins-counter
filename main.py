@@ -6,15 +6,18 @@ from detectors.CircleDetector import CircleDetector
 from detectors.PolishCoinClassifier import PolishCoinClassifier
 from image_processing.CircleDrawer import CircleDrawer
 import cv2 as cv
+from conf.Config import Config
 
 
 def circle_detection_test():
-    detector = CircleDetector()
+    detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
+                              min_radius=Config.circle_detection['min_radius'],
+                              max_radius=Config.circle_detection['max_radius'])
     preprocessor = ImagePreprocessor()
-    circle_drawer = CircleDrawer()
+    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'])
 
     # TODO ogarnij rozdźwięk między typami obrazków (dla detekcji okręgów - openCV, dla klasyfikacji - PIL.Image)
-    img = cv.imread('dataset/multiple-coins/drive-download-20211227T133506Z-001/20211227_141629.jpg',
+    img = cv.imread(Config.main['detected_image'],
                     cv2.IMREAD_COLOR)
     img = preprocessor.preprocess_opencv(img)
     circles = detector.detect(img)
@@ -26,7 +29,7 @@ def circle_detection_test():
     cv.imshow('detected circles', img)
     cv.waitKey(0)
 
-    img = Image.open('dataset/multiple-coins/drive-download-20211227T133506Z-001/20211227_141629.jpg')
+    img = Image.open(Config.main['detected_image'])
     img = img.resize(preprocessor.dim)
     subimages = circle_drawer.get_subimages(img, bboxes)
     for subimage in subimages.values():
@@ -36,39 +39,36 @@ def circle_detection_test():
 
 
 def classifier_train():
-    dirs = {
-        'training': 'dataset/single-coins/train',
-        'validation': 'dataset/single-coins/validation',
-        'test': 'dataset/single-coins/test',
-        'logs': 'logs',
-        'output': 'output/vgg19',
-    }
-    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40, input_shape=(150, 150, 3))
+    classifier = PolishCoinClassifier(polish_coin_classes=Config.polish_coin_classifier['polish_coin_classes_num'],
+                                      dirs=Config.polish_coin_classifier_dataset,
+                                      epochs_training=Config.polish_coin_classifier['epochs_training'],
+                                      input_shape=Config.main['classifier_image_shape'],
+                                      image_datatype=Config.polish_coin_classifier['image_datatype'],
+                                      non_polish_coin_threshold=Config.polish_coin_classifier[
+                                          'non_polish_coin_threshold'],
+                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'])
     classifier.train()
 
 
 def sample_full_detection():
-    img_dim = (600, 400)
-    classifier_image_shape = (150, 150, 3)
-    classifier_weights_file = 'output/vgg19/final-model-weights_3.013_150x150.hdf5'
     detected_image = 'dataset/multiple-coins/265814725_854205531939912_7533564023313811302_n.jpg'
 
-    # load coin classifier
-    dirs = {
-        'training': 'dataset/single-coins/train',
-        'validation': 'dataset/single-coins/validation',
-        'test': 'dataset/single-coins/test',
-        'logs': 'logs'
-    }
-    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40,
-                                      input_shape=classifier_image_shape,
-                                      model_weights_path=classifier_weights_file)
+    classifier = PolishCoinClassifier(polish_coin_classes=Config.polish_coin_classifier['polish_coin_classes_num'],
+                                      dirs=Config.polish_coin_classifier_dataset,
+                                      model_weights_path=Config.polish_coin_classifier['classifier_model_path'],
+                                      input_shape=Config.main['classifier_image_shape'],
+                                      image_datatype=Config.polish_coin_classifier['image_datatype'],
+                                      non_polish_coin_threshold=Config.polish_coin_classifier[
+                                          'non_polish_coin_threshold'],
+                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'])
 
-    detector = CircleDetector()
-    preprocessor = ImagePreprocessor(dim=img_dim)  # only for opencv images
-    circle_drawer = CircleDrawer()
+    detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
+                              min_radius=Config.circle_detection['min_radius'],
+                              max_radius=Config.circle_detection['max_radius'])
+    preprocessor = ImagePreprocessor(dim=Config.main['img_dim'], resize=True)
+    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'])
 
-    detected_img = cv.imread(detected_image,
+    detected_img = cv.imread(Config.main['detected_image'],
                              cv.IMREAD_COLOR)
     # detect circles
     detected_img = preprocessor.preprocess_opencv(detected_img)
@@ -83,14 +83,24 @@ def sample_full_detection():
     # classify
     for bbox, subimage in subimages.items():
         label, result_vect = classifier.classify(subimage)
-        if label != classifier.non_polish_class_label:
+        label_non_polish = label == classifier.non_polish_class_label
+        if label_non_polish:
+            if Config.circle_drawer['draw_non_polish']:
+                detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
+        else:
             detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
 
     # show detection results
     detected_img_color.show()
 
 
+task_to_handler = {
+    'full_detection': sample_full_detection,
+    'circle_detection': circle_detection_test,
+    'classifier_training': classifier_train,
+}
+
 if __name__ == '__main__':
-    # classifier_train()
-    # circle_detection_test()
-    sample_full_detection()
+    task = Config.main['task']
+    handler = task_to_handler[task]
+    handler()

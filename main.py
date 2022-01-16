@@ -43,7 +43,7 @@ def classifier_train():
         'logs': 'logs',
         'output': 'output/vgg19',
     }
-    classifier = PolishCoinClassifier(num_classes=9, dirs=dirs, epochs_training=40, input_shape=(150, 150, 3))
+    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40, input_shape=(150, 150, 3))
     classifier.train()
 
 
@@ -51,18 +51,7 @@ def sample_full_detection():
     img_dim = (600, 400)
     classifier_image_shape = (150, 150, 3)
     classifier_weights_file = 'output/vgg19/final-model-weights_3.013_150x150.hdf5'
-    detected_image = 'dataset/multiple-coins/267875767_642836280194687_5530124461828806183_n.jpg'
-
-    detector = CircleDetector()
-    preprocessor = ImagePreprocessor(dim=img_dim)  # only for opencv images
-    circle_drawer = CircleDrawer()
-
-    detected_img = cv.imread(detected_image,
-                             cv.IMREAD_COLOR)
-    # detect circles
-    detected_img = preprocessor.preprocess_opencv(detected_img)
-    circles = detector.detect(detected_img)
-    bboxes = circle_drawer.get_circles_bboxex(circles)
+    detected_image = 'dataset/multiple-coins/265814725_854205531939912_7533564023313811302_n.jpg'
 
     # load coin classifier
     dirs = {
@@ -71,8 +60,19 @@ def sample_full_detection():
         'test': 'dataset/single-coins/test',
         'logs': 'logs'
     }
-    classifier = PolishCoinClassifier(num_classes=9, dirs=dirs, epochs_training=40, input_shape=classifier_image_shape,
+    classifier = PolishCoinClassifier(polish_coin_classes=9, dirs=dirs, epochs_training=40, input_shape=classifier_image_shape,
                                       model_weights_path=classifier_weights_file)
+
+    detector = CircleDetector()
+    preprocessor = ImagePreprocessor(dim=img_dim)  # only for opencv images
+    circle_drawer = CircleDrawer(non_polish_label=classifier.non_polish_class_label)
+
+    detected_img = cv.imread(detected_image,
+                             cv.IMREAD_COLOR)
+    # detect circles
+    detected_img = preprocessor.preprocess_opencv(detected_img)
+    circles = detector.detect(detected_img)
+    bboxes = circle_drawer.get_circles_bboxex(circles)
 
     # get subimages with circles
     detected_img_color = Image.open(detected_image)
@@ -82,7 +82,7 @@ def sample_full_detection():
     # classify
     for bbox, subimage in subimages.items():
         label, result_vect = classifier.classify(subimage)
-        detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
+        detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label, draw_non_polish=False)
 
     # show detection results
     detected_img_color.show()

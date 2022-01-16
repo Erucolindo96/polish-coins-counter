@@ -10,11 +10,11 @@ from neural_trainer.NeuralTrainer import NeuralTrainer
 
 
 class PolishCoinClassifier:
-    def __init__(self, num_classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
+    def __init__(self, polish_coin_classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
                  image_datatype='float32',
                  epochs_training=10):
         self.model_weights_path = model_weights_path
-        self.num_classes = num_classes
+        self.polish_coin_classes = polish_coin_classes
         self.input_shape = input_shape
         self.dirs = dirs
         self.image_datatype = image_datatype
@@ -28,6 +28,10 @@ class PolishCoinClassifier:
         self.bias_initializer = 'glorot_normal'
         self.learning_rate = 1e-4
         self.metrics = ['accuracy', 'mse']
+
+        self.non_polish_coin_threshold = 0.8
+        self.best_scores_multiplier = 2
+        self.non_polish_class_label = 'non-polish'
 
         self.__init_tf()
 
@@ -99,7 +103,7 @@ class PolishCoinClassifier:
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)(model)
         model = Dense(
-            self.num_classes,
+            self.polish_coin_classes,
             activation='softmax',
             kernel_initializer=kernel_initializer,
             bias_initializer=bias_initializer)(model)
@@ -107,6 +111,11 @@ class PolishCoinClassifier:
         self.model = Model(inputs=[model_input], outputs=[model])
 
     def __find_label(self, result):
+        top_results = tf.math.top_k(result, 2).values.numpy()
+        if top_results[0] <= top_results[1] * self.best_scores_multiplier \
+                or top_results[0] <= self.non_polish_coin_threshold:
+            return self.non_polish_class_label
+
         max_likelihood_idx = tf.math.argmax(result, 0)
         for label, label_vect in self.trainer.labels_to_labels_vect.items():
             if tf.math.equal(tf.math.argmax(label_vect, 0), max_likelihood_idx):

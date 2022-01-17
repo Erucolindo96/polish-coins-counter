@@ -18,8 +18,6 @@ class CircleDrawer:
         return image
 
     def draw_classification_result(self, image: PIL.Image, bbox, result_label):
-        # cv.rectangle(image, bbox[0:1], bbox[2:3], self.color)
-        # cv.putText(image, result_label, bbox[0:1], cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=self.color)
         draw = ImageDraw.Draw(image)
         draw.rectangle(bbox, outline=self.color)
         draw.text((bbox[0], bbox[1]), result_label,
@@ -30,6 +28,7 @@ class CircleDrawer:
         bboxes = []
         for c in circles[0, :]:
             x, y, r = c
+            x, y, r = (np.int64(x), np.int64(y), np.int64(r))
             top_left_x = x - r - self.subimage_margin if x - r - self.subimage_margin >= 0 else 0
             top_left_y = y - r - self.subimage_margin if y - r - self.subimage_margin >= 0 else 0
             bottom_right_x = x + r + self.subimage_margin
@@ -40,6 +39,25 @@ class CircleDrawer:
     def get_subimages(self, image: PIL.Image, bboxes) -> Dict:
         subimages = {}
         for bbox in bboxes:
-            subimages[bbox] = image.crop(bbox)
-
+            subimage = image.crop(bbox)
+            # subimages[bbox] = subimage
+            subimages[bbox] = self.__cut_circle(subimage)
+            # FIXME co wtedy gdy okrąg na krawedzi obrazu -> wycinek nie jest kwadratowy?
+            # wtedy wycinamy koło w złym miejscu
         return subimages
+
+    def __cut_circle(self, subimage: PIL.Image) -> PIL.Image:
+        h, w = subimage.size
+        lum_img = PIL.Image.new('L', (h, w), 0)
+
+        drawer = ImageDraw.Draw(lum_img)
+        drawer.pieslice(((0, 0), (h, w)), 0, 360, fill="white", outline="white")
+
+        img_arr = np.array(subimage)
+        lum_img_arr = np.array(lum_img)
+        final_img_arr = np.dstack((img_arr, lum_img_arr))
+        rgba_image = PIL.Image.fromarray(final_img_arr)
+
+        background = PIL.Image.new('RGB', rgba_image.size, (255, 255, 255))
+        background.paste(rgba_image, mask=rgba_image.split()[3])
+        return background

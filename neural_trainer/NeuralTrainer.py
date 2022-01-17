@@ -8,14 +8,13 @@ import os
 
 
 class NeuralTrainer:
-    def __init__(self, model, dirs, log_dir, epochs=10, test_model=True, input_shape=(80, 80, 3),
+    def __init__(self, model, dirs, log_dir, epochs=10, input_shape=(80, 80, 3),
                  image_datatype='float32'):
         self.model = model
         self.callbacks = []
         self.dirs = dirs
         self.log_dir = log_dir
         self.epochs = epochs
-        self.test_model = test_model
         self.input_shape = input_shape
         self.image_datatype = image_datatype
 
@@ -23,7 +22,7 @@ class NeuralTrainer:
         self.labels_to_labels_vect = {}  # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
         # bo dubluje sie z clasami w PolishCoinClassifier
 
-        self.batch_size = 32
+        self.batch_size = 64
         self.histogram_freq = 1
         self.write_graph = True
         self.write_images = False
@@ -47,18 +46,11 @@ class NeuralTrainer:
 
         return self
 
-    def run(self):
-        """
-        Runs the training flow and tests the result model
-        """
-
-        # Train the model
+    def train(self):
         self.__train()
 
-        # Test the model
+    def test(self):
         self.__test()
-
-        pass
 
     def read_image(self, filepath):
         image = tf.io.read_file(filepath)
@@ -102,6 +94,10 @@ class NeuralTrainer:
         self.training_set = ImageAugmentation(
             dtype='float32'
         )(self.training_set)
+
+        self.validation_set = ImageAugmentation(
+            dtype='float32'
+        )(self.validation_set)
 
         # Apply batching to the data sets
         self.training_set = self.training_set.batch(self.batch_size)
@@ -193,7 +189,7 @@ class NeuralTrainer:
         Tests the result model
         """
 
-        if self.test_set is not None and self.test_model is True:
+        if self.test_set is not None:
             # Create path to the output folder
             testdir = os.path.join(self.log_dir, 'test')
             os.makedirs(testdir, exist_ok=True)

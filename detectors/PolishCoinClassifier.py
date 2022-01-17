@@ -11,13 +11,16 @@ from neural_trainer.NeuralTrainer import NeuralTrainer
 
 class PolishCoinClassifier:
     def __init__(self, polish_coin_classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
-                 image_datatype='float32', epochs_training=10, non_polish_coin_threshold=0.8, best_scores_multiplier=2):
+                 image_datatype='float32', epochs_training=10, non_polish_coin_threshold=0.8, best_scores_multiplier=2,
+                 full_layer_size=4096, full_con_layers=2):
         self.model_weights_path = model_weights_path
         self.polish_coin_classes = polish_coin_classes
         self.input_shape = input_shape
         self.dirs = dirs
         self.image_datatype = image_datatype
         self.epochs_training = epochs_training
+        self.full_layer_size = full_layer_size
+        self.full_con_layers = full_con_layers
 
         self.model = None
 
@@ -91,16 +94,14 @@ class PolishCoinClassifier:
 
         model = vgg19(preprocessing)
         model = Flatten()(model)
-        model = Dense(
-            4096,
-            activation='relu',
-            kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)(model)
-        model = Dense(
-            4096,
-            activation='relu',
-            kernel_initializer=kernel_initializer,
-            bias_initializer=bias_initializer)(model)
+
+        for i in range(0, self.full_con_layers):
+            model = Dense(
+                self.full_layer_size,
+                activation='relu',
+                kernel_initializer=kernel_initializer,
+                bias_initializer=bias_initializer)(model)
+
         model = Dense(
             self.polish_coin_classes,
             activation='softmax',

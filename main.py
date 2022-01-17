@@ -46,12 +46,14 @@ def classifier_train():
                                       image_datatype=Config.polish_coin_classifier['image_datatype'],
                                       non_polish_coin_threshold=Config.polish_coin_classifier[
                                           'non_polish_coin_threshold'],
-                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'])
+                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'],
+                                      full_layer_size=Config.polish_coin_classifier['full_layer_size'],
+                                      full_con_layers=Config.polish_coin_classifier['full_con_layers'])
     classifier.train()
 
 
 def sample_full_detection():
-    detected_image = 'dataset/multiple-coins/265814725_854205531939912_7533564023313811302_n.jpg'
+    detected_image = Config.main['detected_image']
 
     classifier = PolishCoinClassifier(polish_coin_classes=Config.polish_coin_classifier['polish_coin_classes_num'],
                                       dirs=Config.polish_coin_classifier_dataset,
@@ -68,8 +70,7 @@ def sample_full_detection():
     preprocessor = ImagePreprocessor(dim=Config.main['img_dim'], resize=True)
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'])
 
-    detected_img = cv.imread(Config.main['detected_image'],
-                             cv.IMREAD_COLOR)
+    detected_img = cv.imread(detected_image, cv.IMREAD_COLOR)
     # detect circles
     detected_img = preprocessor.preprocess_opencv(detected_img)
     circles = detector.detect(detected_img)

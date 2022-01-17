@@ -23,7 +23,7 @@ class NeuralTrainer:
         self.labels_to_labels_vect = {}  # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
         # bo dubluje sie z clasami w PolishCoinClassifier
 
-        self.batch_size = 32
+        self.batch_size = 64
         self.histogram_freq = 1
         self.write_graph = True
         self.write_images = False
@@ -102,6 +102,10 @@ class NeuralTrainer:
         self.training_set = ImageAugmentation(
             dtype='float32'
         )(self.training_set)
+
+        self.validation_set = ImageAugmentation(
+            dtype='float32'
+        )(self.validation_set)
 
         # Apply batching to the data sets
         self.training_set = self.training_set.batch(self.batch_size)

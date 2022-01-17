@@ -11,8 +11,7 @@ from neural_trainer.NeuralTrainer import NeuralTrainer
 
 class PolishCoinClassifier:
     def __init__(self, polish_coin_classes, dirs, model_weights_path=None, input_shape=(80, 80, 3),
-                 image_datatype='float32',
-                 epochs_training=10):
+                 image_datatype='float32', epochs_training=10, non_polish_coin_threshold=0.8, best_scores_multiplier=2):
         self.model_weights_path = model_weights_path
         self.polish_coin_classes = polish_coin_classes
         self.input_shape = input_shape
@@ -29,8 +28,8 @@ class PolishCoinClassifier:
         self.learning_rate = 1e-4
         self.metrics = ['accuracy', 'mse']
 
-        self.non_polish_coin_threshold = 0.8
-        self.best_scores_multiplier = 2
+        self.non_polish_coin_threshold = non_polish_coin_threshold
+        self.best_scores_multiplier = best_scores_multiplier
         self.non_polish_class_label = 'non-polish'
 
         self.__init_tf()

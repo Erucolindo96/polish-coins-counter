@@ -45,7 +45,7 @@ class PolishCoinClassifier:
         self.__show_model()
 
         self.trainer = NeuralTrainer(model=self.model, dirs=self.dirs, log_dir=self.dirs['logs'],
-                                     epochs=self.epochs_training, test_model=True, input_shape=self.input_shape)
+                                     epochs=self.epochs_training, input_shape=self.input_shape)
         self.trainer.initialize()
 
     def __init_tf(self):
@@ -124,7 +124,10 @@ class PolishCoinClassifier:
         return None
 
     def train(self):
-        self.trainer.run()
+        self.trainer.train()
+
+    def test(self):
+        self.trainer.test()
 
     def classify(self, image) -> Tuple[str, tf.Tensor]:
         img_array = keras.preprocessing.image.img_to_array(np.array(image))

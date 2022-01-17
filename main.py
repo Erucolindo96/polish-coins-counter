@@ -52,6 +52,21 @@ def classifier_train():
     classifier.train()
 
 
+def classifier_test():
+    classifier = PolishCoinClassifier(polish_coin_classes=Config.polish_coin_classifier['polish_coin_classes_num'],
+                                      dirs=Config.polish_coin_classifier_dataset,
+                                      model_weights_path=Config.polish_coin_classifier['classifier_model_path'],
+                                      epochs_training=Config.polish_coin_classifier['epochs_training'],
+                                      input_shape=Config.main['classifier_image_shape'],
+                                      image_datatype=Config.polish_coin_classifier['image_datatype'],
+                                      non_polish_coin_threshold=Config.polish_coin_classifier[
+                                          'non_polish_coin_threshold'],
+                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'],
+                                      full_layer_size=Config.polish_coin_classifier['full_layer_size'],
+                                      full_con_layers=Config.polish_coin_classifier['full_con_layers'])
+    classifier.test()
+
+
 def sample_full_detection():
     detected_image = Config.main['detected_image']
 
@@ -62,7 +77,9 @@ def sample_full_detection():
                                       image_datatype=Config.polish_coin_classifier['image_datatype'],
                                       non_polish_coin_threshold=Config.polish_coin_classifier[
                                           'non_polish_coin_threshold'],
-                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'])
+                                      best_scores_multiplier=Config.polish_coin_classifier['best_scores_multiplier'],
+                                      full_layer_size=Config.polish_coin_classifier['full_layer_size'],
+                                      full_con_layers=Config.polish_coin_classifier['full_con_layers'])
 
     detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
                               min_radius=Config.circle_detection['min_radius'],
@@ -99,6 +116,7 @@ task_to_handler = {
     'full_detection': sample_full_detection,
     'circle_detection': circle_detection_test,
     'classifier_training': classifier_train,
+    'classifier_test': classifier_test
 }
 
 if __name__ == '__main__':

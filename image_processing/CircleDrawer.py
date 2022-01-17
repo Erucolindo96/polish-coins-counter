@@ -7,9 +7,9 @@ from PIL import ImageFont, ImageDraw
 
 
 class CircleDrawer:
-    def __init__(self, color=(0, 255, 0)):
+    def __init__(self, color=(0, 255, 0), subimage_margin=2):
         self.color = color
-        self.subimage_margin = 2
+        self.subimage_margin = subimage_margin
 
     def draw(self, image: np.array, circles):
         for i in circles[0, :]:

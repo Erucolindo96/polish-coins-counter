@@ -99,11 +99,14 @@ class NeuralTrainer:
             dtype='float32'
         )(self.validation_set)
 
+        self.test_set = ImageAugmentation(
+            dtype='float32'
+        )(self.test_set)
+
         # Apply batching to the data sets
         self.training_set = self.training_set.batch(self.batch_size)
         self.validation_set = self.validation_set.batch(self.batch_size)
         self.test_set = self.test_set.batch(self.batch_size)
-        # TODO zastabnowić się nad dodaniem prefetch batch
 
     def __prepare_callbacks(self):
 

@@ -14,7 +14,8 @@ def circle_detection_test():
                               min_radius=Config.circle_detection['min_radius'],
                               max_radius=Config.circle_detection['max_radius'])
     preprocessor = ImagePreprocessor()
-    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'])
+    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
+                                 subimage_margin=Config.circle_drawer['subimage_margin'])
 
     # TODO ogarnij rozdźwięk między typami obrazków (dla detekcji okręgów - openCV, dla klasyfikacji - PIL.Image)
     img = cv.imread(Config.main['detected_image'],
@@ -85,7 +86,8 @@ def sample_full_detection():
                               min_radius=Config.circle_detection['min_radius'],
                               max_radius=Config.circle_detection['max_radius'])
     preprocessor = ImagePreprocessor(dim=Config.main['img_dim'], resize=True)
-    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'])
+    circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
+                                 subimage_margin=Config.circle_drawer['subimage_margin'])
 
     detected_img = cv.imread(detected_image, cv.IMREAD_COLOR)
     # detect circles

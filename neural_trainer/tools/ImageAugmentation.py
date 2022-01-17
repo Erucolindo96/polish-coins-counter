@@ -26,7 +26,7 @@ class ImageAugmentation:
                  vertical_flip=True,
                  horizontal_flip=True,
                  zoom_range=(0, 0.5),
-                 rotation_range=(-20, 20),
+                 rotation_range=(-45, 45),
                  width_shift_range=(0, 0),
                  height_shift_range=(0, 0),
                  shear_x_range=(0, 0),

@@ -11,7 +11,7 @@ class Config:
         'full_layer_size': 1024,
         'full_con_layers': 2,
         'polish_coin_classes_num': 9,
-        'classifier_model_path': 'logs/80x80-two-layers-1024-full-train/weights-epoch_60-val_loss_1.27.hdf5',
+        'classifier_model_path': 'changeMe',
         # najlepsze wychodzą 80x80-two-layers-1024, moze bez pełnej augmentacji
         'image_datatype': 'float32',
         'epochs_training': 60,
@@ -20,10 +20,14 @@ class Config:
     }
 
     main = {
-        'img_dim': (900, 600),  # zwiekszyc wielkosc obrazka
+        'img_dim': (900, 600),
         'classifier_image_shape': (80, 80, 3),
-        'detected_image': 'dataset/multiple-coins/while-field/reverse-only/20220119_125147.jpg',
+        'detected_image': 'changeMe',
         'task': 'full_detection'
+    }
+
+    font = {
+        'path': '/usr/share/fonts/truetype/freefont/FreeMono.ttf'
     }
 
     circle_drawer = {

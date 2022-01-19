@@ -16,7 +16,7 @@ def circle_detection_test():
                               max_radius=Config.circle_detection['max_radius'])
     preprocessor = ImagePreprocessor(resize=True, dim=Config.main['img_dim'])
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
-                                 subimage_margin=Config.circle_drawer['subimage_margin'])
+                                 subimage_margin=Config.circle_drawer['subimage_margin'], font=Config.font['path'])
 
     # TODO ogarnij rozdźwięk między typami obrazków (dla detekcji okręgów - openCV, dla klasyfikacji - PIL.Image)
     img = cv.imread(Config.main['detected_image'],
@@ -88,7 +88,7 @@ def sample_full_detection():
                               max_radius=Config.circle_detection['max_radius'])
     preprocessor = ImagePreprocessor(dim=Config.main['img_dim'], resize=True)
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
-                                 subimage_margin=Config.circle_drawer['subimage_margin'])
+                                 subimage_margin=Config.circle_drawer['subimage_margin'], font=Config.font['path'])
 
     detected_img = cv.imread(detected_image, cv.IMREAD_COLOR)
     # detect circles
@@ -115,7 +115,7 @@ def sample_full_detection():
             detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
 
     # display sum
-    coin_sum_drawer = CoinSumDrawer(labels=labels)
+    coin_sum_drawer = CoinSumDrawer(labels=labels, font=Config.font['path'])
     coin_sum_drawer.count()
     detected_img_color = coin_sum_drawer.draw_sum(detected_img_color)
 

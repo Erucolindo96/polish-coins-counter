@@ -7,9 +7,10 @@ from PIL import ImageFont, ImageDraw
 
 
 class CircleDrawer:
-    def __init__(self, color=(0, 255, 0), subimage_margin=2):
+    def __init__(self, font, color=(0, 255, 0), subimage_margin=2):
         self.color = color
         self.subimage_margin = subimage_margin
+        self.font = font
 
     def draw(self, image: np.array, circles):
         for i in circles[0, :]:
@@ -21,7 +22,7 @@ class CircleDrawer:
         draw = ImageDraw.Draw(image)
         draw.rectangle(bbox, outline=self.color)
         draw.text((bbox[0], bbox[1]), result_label,
-                  font=ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMono.ttf', 20), fill=self.color)
+                  font=ImageFont.truetype(self.font, 20), fill=self.color)
         return image
 
     def get_circles_bboxex(self, circles):

@@ -37,5 +37,6 @@ class Config:
     }
 
     image_scaler = {
-        'stretching': (41, 254)
+        'lower': 41,
+        'upper': 254,
     }

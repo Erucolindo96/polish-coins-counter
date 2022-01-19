@@ -1,20 +1,19 @@
 import cv2
 from PIL import Image
 
-from image_processing.ImagePreprocessorGrayscale import ImagePreprocessorGrayscale
+from image_processing.ImagePreprocessor import ImagePreprocessor
 from detectors.CircleDetector import CircleDetector
 from detectors.PolishCoinClassifier import PolishCoinClassifier
 from image_processing.CircleDrawer import CircleDrawer
 import cv2 as cv
 from conf.Config import Config
-from image_processing.ImagePreprocessorRGB import ImagePreprocessorRGB
 
 
 def circle_detection_test():
     detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
                               min_radius=Config.circle_detection['min_radius'],
                               max_radius=Config.circle_detection['max_radius'])
-    preprocessor = ImagePreprocessorGrayscale(resize=True, dim=Config.main['img_dim'])
+    preprocessor = ImagePreprocessor(resize=True, dim=Config.main['img_dim'])
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
                                  subimage_margin=Config.circle_drawer['subimage_margin'])
 
@@ -86,26 +85,20 @@ def sample_full_detection():
     detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
                               min_radius=Config.circle_detection['min_radius'],
                               max_radius=Config.circle_detection['max_radius'])
-    preprocessor_grayscale = ImagePreprocessorGrayscale(dim=Config.main['img_dim'], resize=True)
-    preprocessor_rgb = ImagePreprocessorRGB(dim=Config.main['img_dim'], resize=True,
-                                            stretching=Config.image_scaler['stretching'])
-
+    preprocessor = ImagePreprocessor(dim=Config.main['img_dim'], resize=True)
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
                                  subimage_margin=Config.circle_drawer['subimage_margin'])
 
     detected_img = cv.imread(detected_image, cv.IMREAD_COLOR)
     # detect circles
-    detected_img = preprocessor_grayscale.preprocess_opencv(detected_img)
+    detected_img = preprocessor.preprocess_opencv(detected_img)
     circles = detector.detect(detected_img)
     bboxes = circle_drawer.get_circles_bboxex(circles)
 
-    detected_img_color_orig = Image.open(detected_image)
-    detected_img_color_orig = detected_img_color_orig.resize(Config.main['img_dim'])
-
     # get subimages with circles
-    detected_img_color_np = cv.imread(detected_image, cv.IMREAD_COLOR)
-    detected_img_color_preprocessed_pil = preprocessor_rgb.preprocess(detected_img_color_np)
-    subimages = circle_drawer.get_subimages(detected_img_color_preprocessed_pil, bboxes)
+    detected_img_color = Image.open(detected_image)
+    detected_img_color = detected_img_color.resize(preprocessor.dim)
+    subimages = circle_drawer.get_subimages(detected_img_color, bboxes)
 
     # classify
     for bbox, subimage in subimages.items():
@@ -113,12 +106,12 @@ def sample_full_detection():
         label_non_polish = label == classifier.non_polish_class_label
         if label_non_polish:
             if Config.circle_drawer['draw_non_polish']:
-                detected_img_color_orig = circle_drawer.draw_classification_result(detected_img_color_orig, bbox, label)
+                detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
         else:
-            detected_img_color_orig = circle_drawer.draw_classification_result(detected_img_color_orig, bbox, label)
+            detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
 
     # show detection results
-    detected_img_color_orig.show()
+    detected_img_color.show()
 
 
 task_to_handler = {

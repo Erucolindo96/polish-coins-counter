@@ -1,6 +1,7 @@
 import cv2
 from PIL import Image
 
+from image_processing.CoinSumDrawer import CoinSumDrawer
 from image_processing.ImagePreprocessor import ImagePreprocessor
 from detectors.CircleDetector import CircleDetector
 from detectors.PolishCoinClassifier import PolishCoinClassifier
@@ -100,15 +101,23 @@ def sample_full_detection():
     detected_img_color = detected_img_color.resize(preprocessor.dim)
     subimages = circle_drawer.get_subimages(detected_img_color, bboxes)
 
+    labels = []
     # classify
     for bbox, subimage in subimages.items():
         label, result_vect = classifier.classify(subimage)
+        labels.append(label)
+
         label_non_polish = label == classifier.non_polish_class_label
         if label_non_polish:
             if Config.circle_drawer['draw_non_polish']:
                 detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
         else:
             detected_img_color = circle_drawer.draw_classification_result(detected_img_color, bbox, label)
+
+    # display sum
+    coin_sum_drawer = CoinSumDrawer(labels=labels)
+    coin_sum_drawer.count()
+    detected_img_color = coin_sum_drawer.draw_sum(detected_img_color)
 
     # show detection results
     detected_img_color.show()

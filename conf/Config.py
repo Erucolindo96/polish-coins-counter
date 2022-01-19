@@ -3,7 +3,7 @@ class Config:
         'training': 'dataset/single-coins/train',
         'validation': 'dataset/single-coins/validation',
         'test': 'dataset/single-coins/test',
-        'logs': 'logs/80x80-two-layers-1024-full-train-ext-aug',
+        'logs': 'logs/80x80-two-layers-1024-hist-stretch',
         'output': 'output/vgg19',
     }
 
@@ -16,13 +16,13 @@ class Config:
         'image_datatype': 'float32',
         'epochs_training': 60,
         'non_polish_coin_threshold': 0.8,
-        'best_scores_multiplier': 2,
+        'best_scores_multiplier': 1.5,
     }
 
     main = {
         'img_dim': (900, 600),  # zwiekszyc wielkosc obrazka
         'classifier_image_shape': (80, 80, 3),
-        'detected_image': 'dataset/multiple-coins/pink-field/reverse-only/20220117_100551.jpg',
+        'detected_image': 'dataset/multiple-coins/while-field/reverse-only/20220119_125147.jpg',
         'task': 'full_detection'
     }
 
@@ -37,6 +37,5 @@ class Config:
     }
 
     image_scaler = {
-        'lower': 41,
-        'upper': 254,
+        'stretching': None  # 'stretching': (41, 254)
     }

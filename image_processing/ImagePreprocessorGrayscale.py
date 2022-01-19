@@ -5,8 +5,8 @@ from image_processing.Histogram import Histogram
 from image_processing.PixelScaler import PixelScaler
 
 
-class ImagePreprocessor:
-    def __init__(self, resize=True, dim=(600, 400)):  # , stretching=(41, 255)):
+class ImagePreprocessorGrayscale:
+    def __init__(self, resize=True, dim=(600, 400)):
         self.resize = resize
         self.dim = dim
 

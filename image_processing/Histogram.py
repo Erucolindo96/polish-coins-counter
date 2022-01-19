@@ -28,17 +28,20 @@ class Histogram:
                 for file in image_files:
                     image = cv2.imread(file)
                     hsvim = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-                    self.__process_image(hsvim)
-        self.__count_lower_upper()
+                    self.process_image(hsvim)
+        self.count_lower_upper()
 
     def save_results(self):
         with open('stretching-results', 'w') as f:
             f.write('lower: {}'.format(self.lower))
             f.write('upper: {}'.format(self.upper))
 
-    def __process_image(self, hsvImage):
-        v_channel = hsvImage[:, :, 2]
-        self.__process_pixel_vectorized(v_channel)
+    def process_image(self, image, type='hsv'):
+        if type == 'hsv':
+            channel = image[:, :, 2]
+        else:
+            channel = image
+        self.__process_pixel_vectorized(channel)
 
     def __process_pixel(self, value: int):
         if value not in self.histogram:
@@ -47,7 +50,7 @@ class Histogram:
         self.pix_cnt += 1
         return value
 
-    def __count_lower_upper(self):
+    def count_lower_upper(self):
         cumulative = 0.0
         for pix_val, count in sorted(self.histogram.items(), key=lambda item: item[0]):
             delta = float(count) / self.pix_cnt
@@ -57,4 +60,3 @@ class Histogram:
             if cumulative <= self.cumulative_upper_threshold:
                 self.upper = pix_val
 
-            assert (cumulative <= 1.0)

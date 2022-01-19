@@ -9,7 +9,7 @@ class CircleDetector:
         self.max_radius = max_radius
 
     def detect(self, image):
-        circles = cv.HoughCircles(image, cv.HOUGH_GRADIENT, dp=1, minDist=self.min_dist, param1=150, param2=30,
+        circles = cv.HoughCircles(image, cv.HOUGH_GRADIENT, dp=1, minDist=self.min_dist, param1=250, param2=50,
                                   minRadius=self.min_radius, maxRadius=self.max_radius)
 
         circles = np.uint16(np.around(circles))

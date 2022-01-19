@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import tensorflow as tf
 from neural_trainer.tools.ImageAugmentation import ImageAugmentation
 from neural_trainer.tools.ConfusionMatrixCallback import ConfusionMatrixCallback
@@ -9,7 +11,7 @@ import os
 
 class NeuralTrainer:
     def __init__(self, model, dirs, log_dir, epochs=10, input_shape=(80, 80, 3),
-                 image_datatype='float32'):
+                 image_datatype='float32', pix_scale: Tuple = None):
         self.model = model
         self.callbacks = []
         self.dirs = dirs
@@ -17,6 +19,7 @@ class NeuralTrainer:
         self.epochs = epochs
         self.input_shape = input_shape
         self.image_datatype = image_datatype
+        self.pix_scale = pix_scale
 
         self.__history = None
         self.labels_to_labels_vect = {}  # TODO wynieść ogarnianie spraw z mapowaniem labeli na klasy do PolishCoinClassifier/gdzies indziej
@@ -60,6 +63,9 @@ class NeuralTrainer:
         image = tf.image.resize(image, [self.input_shape[0], self.input_shape[1]])
         return image
 
+    def __scale_pixels(self, image: tf.Tensor):
+        return image
+
     def __create_dataset(self, directory):
         labels_dirs = glob(os.path.join(directory, '*'))
         datas = {'files': [], 'labels': []}
@@ -80,6 +86,10 @@ class NeuralTrainer:
         ds = tf.data.Dataset.from_tensor_slices((datas['files'], datas['labels']))
         ds = ds.map(
             lambda file, file_label: (self.read_image(file), file_label),
+            num_parallel_calls=tf.data.AUTOTUNE
+        )
+        ds = ds.map(
+            lambda image, file_label: (self.__scale_pixels(image), file_label),
             num_parallel_calls=tf.data.AUTOTUNE
         )
         return ds

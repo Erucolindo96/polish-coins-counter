@@ -13,7 +13,7 @@ def circle_detection_test():
     detector = CircleDetector(min_dist=Config.circle_detection['min_dist'],
                               min_radius=Config.circle_detection['min_radius'],
                               max_radius=Config.circle_detection['max_radius'])
-    preprocessor = ImagePreprocessor()
+    preprocessor = ImagePreprocessor(resize=True, dim=Config.main['img_dim'])
     circle_drawer = CircleDrawer(color=Config.circle_drawer['bbox_color'],
                                  subimage_margin=Config.circle_drawer['subimage_margin'])
 

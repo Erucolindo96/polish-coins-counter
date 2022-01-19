@@ -22,12 +22,19 @@ class PixelScaler:
             return 255
         return int(255 * (pix - self.lower) / (self.upper - self.lower))
 
-    def scale(self, hsvImage):
-        v_channel = hsvImage[:, :, 2]
-        v_channel_scaled = self.scale_pixel_vect(v_channel)
-        hsvImage[:, :, 2] = v_channel_scaled
+    def scale(self, image, type='hsv'):
+        if type == 'hsv':
+            channel = image[:, :, 2]
+        else:
+            channel = image
+        channel_scaled = self.scale_pixel_vect(channel)
+        channel_scaled = channel_scaled.astype(np.uint8)
 
-        return hsvImage
+        if type == 'hsv':
+            image[:, :, 2] = channel_scaled
+            return image
+
+        return channel_scaled
 
     def scale_images_in_dirs(self):
         for dyr in self.dirs:
